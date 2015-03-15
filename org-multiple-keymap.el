@@ -6,7 +6,7 @@
 ;; Maintainer: myuhe
 ;; Copyright (C) :2015 myuhe all rights reserved.
 ;; Created: :15-03-15
-;; Package-Requires: ((org "8.2.4"))
+;; Package-Requires: ((org "8.2.4") (emacs "24") (cl-lib "0.5"))
 ;; Keywords: convenience, org-mode
 
 ;; This program is free software; you can redistribute it and/or modify
