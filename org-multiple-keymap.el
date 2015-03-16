@@ -81,6 +81,7 @@
 (org-mukey-make-function org-timestamp-up-day)
 (org-mukey-make-function org-timestamp-down-day)
 
+;;;###autoload
 (define-minor-mode org-multiple-keymap-minor-mode
   "Toggle `org-multiple-keymap-minor-mode'.
 With a prefix argument ARG, enable `org-multiple-keymap-minor-mode' if
