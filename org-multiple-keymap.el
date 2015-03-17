@@ -95,9 +95,12 @@ Key bindings (per priority):
 \\{org-mukey-priority-map}"
   :lighter ""
   (if org-multiple-keymap-minor-mode
+      (progn
         (org-mukey-set-keymap)
+        (add-hook 'after-change-functions 'org-mukey-timestamp-refresh nil t))
     (remove-overlays nil nil 'org-mukey-timestamp-ov t)
-    (remove-overlays nil nil 'org-mukey-priority-ov t)))
+    (remove-overlays nil nil 'org-mukey-priority-ov t)
+    (remove-hook 'after-change-functions 'org-mukey-timestamp-refresh)))
 
 (defun org-mukey-set-keymap ()
   (interactive)
@@ -133,6 +136,16 @@ Key bindings (per priority):
                            (org-element-property :scheduled hl) ) ) 'timestamp
         (lambda (hl) (org-element-property type hl) ))))
 
+(defun org-mukey-timestamp-refresh (beg end len)
+  "DOCSTRING"
+  (when (eq (get-text-property (point) 'face) 'org-date)
+    (let ((ov (make-overlay
+                   (re-search-forward "[]>]" nil t)
+                   (re-search-backward "[[<]" nil t))))
+                 (overlay-put ov 'face 'highlight)
+                 (overlay-put ov 'evaporate t)
+                 (overlay-put ov 'keymap org-mukey-timestamp-map)
+                 (overlay-put ov 'org-mukey-timestamp-ov t))))
 
 (defun org-mukey-make-prior-begin ()
   "DOCSTRING"
