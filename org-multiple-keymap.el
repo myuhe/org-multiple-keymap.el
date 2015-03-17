@@ -134,7 +134,11 @@ Key bindings (per priority):
     ,@(org-element-map (org-element-map list 'headline
                          (lambda (hl)
                            (org-element-property :scheduled hl) ) ) 'timestamp
-        (lambda (hl) (org-element-property type hl) ))))
+        (lambda (hl) (org-element-property type hl) ))
+    ,@(org-element-map (org-element-map list 'headline
+                         (lambda (hl)
+                           (org-element-property :closed hl) ) ) 'timestamp
+        (lambda (hl) (org-element-property type hl)))))
 
 (defun org-mukey-timestamp-refresh (beg end len)
   "DOCSTRING"
