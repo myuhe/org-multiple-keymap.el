@@ -142,14 +142,16 @@ Key bindings (per priority):
 
 (defun org-mukey-timestamp-refresh (beg end len)
   "DOCSTRING"
-  (when (eq (get-text-property (point) 'face) 'org-date)
+  (save-excursion
+    (when (org-at-timestamp-p t)
+      (goto-char (1-(point)))
     (let ((ov (make-overlay
                    (re-search-forward "[]>]" nil t)
                    (re-search-backward "[[<]" nil t))))
                  (overlay-put ov 'face 'highlight)
                  (overlay-put ov 'evaporate t)
                  (overlay-put ov 'keymap org-mukey-timestamp-map)
-                 (overlay-put ov 'org-mukey-timestamp-ov t))))
+                 (overlay-put ov 'org-mukey-timestamp-ov t)))))
 
 (defun org-mukey-make-prior-begin ()
   "DOCSTRING"
