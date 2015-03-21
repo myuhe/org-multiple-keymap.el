@@ -40,13 +40,15 @@
 
 (defvar org-mukey-heading-map
     (let ((map (make-sparse-keymap)))
+        (define-key map (kbd "a") 'org-archive-subtree)
+        (define-key map (kbd "d") (lambda () (org-todo 'done)))
         (define-key map (kbd "n") 'org-next-visible-heading)
         (define-key map (kbd "p") 'org-previous-visible-heading)
         (define-key map (kbd "f") 'org-do-demote)
         (define-key map (kbd "b") 'org-do-promote)
         (define-key map (kbd "u") 'outline-up-heading)
         map)
-  "Keymap to change priority on priority cookie.")
+  "Keymap to control heading.")
 
 (defvar org-mukey-timestamp-map
       (let ((map (make-sparse-keymap)))
