@@ -55,7 +55,6 @@
         map)
   "Keymap to change priority on priority cookie.")
 
-
 (defvar org-multiple-keymap-minor-mode nil)
 
 (defmacro org-mukey-make-function (fun)
@@ -101,7 +100,8 @@ Key bindings (per priority):
         (add-hook 'after-change-functions 'org-mukey-priority-refresh nil t))
     (remove-overlays nil nil 'org-mukey-timestamp-ov t)
     (remove-overlays nil nil 'org-mukey-priority-ov t)
-    (remove-hook 'after-change-functions 'org-mukey-timestamp-refresh)))
+    (remove-hook 'after-change-functions 'org-mukey-timestamp-refresh)
+    (remove-hook 'after-change-functions 'org-mukey-priority-refresh)))
 
 (defun org-mukey-set-keymap ()
   (interactive)
