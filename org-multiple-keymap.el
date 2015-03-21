@@ -145,6 +145,14 @@ Key bindings (per priority):
                  (overlay-put ov 'keymap org-mukey-heading-map)
                  (overlay-put ov 'org-mukey-priority-ov t))))))
 
+(defun org-mukey-make-heading-list ()
+  "DOCSTRING"
+  (save-excursion)
+  (goto-char (point-max))
+  (cl-loop while (re-search-backward org-heading-regexp nil t)
+           collect (cons (point) (org-current-level))))
+
+
 (defun org-mukey-timestamp-pos-list (list type)
   "DOCSTRING"
   `(,@(org-element-map list 'timestamp
@@ -161,6 +169,21 @@ Key bindings (per priority):
                          (lambda (hl)
                            (org-element-property :closed hl) ) ) 'timestamp
         (lambda (hl) (org-element-property type hl)))))
+
+(defun org-mukey-make-priority-begin ()
+  "DOCSTRING"
+  (save-excursion)
+  (goto-char (point-max))
+  (reverse
+   (cl-loop while (re-search-backward org-priority-regexp nil t)
+            collect (point))))
+
+(defun org-mukey-make-priority-end ()
+  "DOCSTRING"
+  (save-excursion)
+  (goto-char (point-min))
+  (cl-loop while (re-search-forward org-priority-regexp nil t)
+           collect (1-(point))))
 
 (defun org-mukey-heading-refresh (beg end len)
   "DOCSTRING"
@@ -204,28 +227,6 @@ Key bindings (per priority):
         (overlay-put ov 'evaporate t)
         (overlay-put ov 'keymap org-mukey-priority-map)
         (overlay-put ov 'org-mukey-priority-ov t)))))
-
-(defun org-mukey-make-priority-begin ()
-  "DOCSTRING"
-  (save-excursion)
-  (goto-char (point-max))
-  (reverse
-   (cl-loop while (re-search-backward org-priority-regexp nil t)
-            collect (point))))
-
-(defun org-mukey-make-priority-end ()
-  "DOCSTRING"
-  (save-excursion)
-  (goto-char (point-min))
-  (cl-loop while (re-search-forward org-priority-regexp nil t)
-           collect (1-(point))))
-
-(defun org-mukey-make-heading-list ()
-  "DOCSTRING"
-  (save-excursion)
-  (goto-char (point-max))
-  (cl-loop while (re-search-backward org-heading-regexp nil t)
-           collect (cons (point) (org-current-level))))
 
 (provide 'org-multiple-keymap)
 ;;; org-multiple-keymap.el ends here
