@@ -39,32 +39,32 @@
 (require 'org-element)
 
 (defvar org-mukey-heading-map
-    (let ((map (make-sparse-keymap)))
-        (define-key map (kbd "a") 'org-archive-subtree)
-        (define-key map (kbd "d") (lambda () (org-todo 'done)))
-        (define-key map (kbd "n") 'org-next-visible-heading)
-        (define-key map (kbd "p") 'org-previous-visible-heading)
-        (define-key map (kbd "f") 'org-do-demote)
-        (define-key map (kbd "b") 'org-do-promote)
-        (define-key map (kbd "u") 'outline-up-heading)
-        map)
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "a") 'org-archive-subtree)
+    (define-key map (kbd "d") (lambda () (org-todo 'done)))
+    (define-key map (kbd "n") 'org-next-visible-heading)
+    (define-key map (kbd "p") 'org-previous-visible-heading)
+    (define-key map (kbd "f") 'org-do-demote)
+    (define-key map (kbd "b") 'org-do-promote)
+    (define-key map (kbd "u") 'outline-up-heading)
+    map)
   "Keymap to control heading.")
 
 (defvar org-mukey-timestamp-map
-      (let ((map (make-sparse-keymap)))
-        (define-key map (kbd "N") 'org-mukey-org-timestamp-down-day)
-        (define-key map (kbd "P") 'org-mukey-org-timestamp-up-day)
-        (define-key map (kbd "n") 'org-mukey-org-timestamp-down)
-        (define-key map (kbd "p") 'org-mukey-org-timestamp-up)
-        (define-key map (kbd "o") 'org-open-at-point)
-        map)
-      "Keymap to change date on timestamp element.")
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "N") 'org-mukey-org-timestamp-down-day)
+    (define-key map (kbd "P") 'org-mukey-org-timestamp-up-day)
+    (define-key map (kbd "n") 'org-mukey-org-timestamp-down)
+    (define-key map (kbd "p") 'org-mukey-org-timestamp-up)
+    (define-key map (kbd "o") 'org-open-at-point)
+    map)
+  "Keymap to change date on timestamp element.")
 
 (defvar org-mukey-priority-map
-    (let ((map (make-sparse-keymap)))
-        (define-key map (kbd "n") 'org-priority-down)
-        (define-key map (kbd "p") 'org-priority-up)
-        map)
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") 'org-priority-down)
+    (define-key map (kbd "p") 'org-priority-up)
+    map)
   "Keymap to change priority on priority cookie.")
 
 (defvar org-multiple-keymap-minor-mode nil)
@@ -79,14 +79,14 @@
         (interactive)
         (,fun)
         (save-excursion
-        (let ((ov (make-overlay
-                   (re-search-forward "[]>]" nil t)
-                   (re-search-backward "[[<]" nil t))))
-                 (overlay-put ov 'face 'highlight)
-                 (overlay-put ov 'evaporate t)
-                 (overlay-put ov 'keymap org-mukey-timestamp-map)
-                 (overlay-put ov 'org-mukey-timestamp-ov t)))))))
-        
+          (let ((ov (make-overlay
+                     (re-search-forward "[]>]" nil t)
+                     (re-search-backward "[[<]" nil t))))
+            (overlay-put ov 'face 'highlight)
+            (overlay-put ov 'evaporate t)
+            (overlay-put ov 'keymap org-mukey-timestamp-map)
+            (overlay-put ov 'org-mukey-timestamp-ov t)))))))
+
 (org-mukey-make-function org-timestamp-up)
 (org-mukey-make-function org-timestamp-down)
 (org-mukey-make-function org-timestamp-up-day)
@@ -183,13 +183,13 @@ Key bindings (per priority):
   (save-excursion
     (when (org-at-timestamp-p t)
       (goto-char (1-(point)))
-    (let ((ov (make-overlay
-                   (re-search-forward "[]>]" nil t)
-                   (re-search-backward "[[<]" nil t))))
-                 (overlay-put ov 'face 'highlight)
-                 (overlay-put ov 'evaporate t)
-                 (overlay-put ov 'keymap org-mukey-timestamp-map)
-                 (overlay-put ov 'org-mukey-timestamp-ov t)))))
+      (let ((ov (make-overlay
+                 (re-search-forward "[]>]" nil t)
+                 (re-search-backward "[[<]" nil t))))
+        (overlay-put ov 'face 'highlight)
+        (overlay-put ov 'evaporate t)
+        (overlay-put ov 'keymap org-mukey-timestamp-map)
+        (overlay-put ov 'org-mukey-timestamp-ov t)))))
 
 (defun org-mukey-priority-refresh (beg end len)
   "DOCSTRING"
@@ -197,35 +197,35 @@ Key bindings (per priority):
   (save-excursion
     (re-search-backward ".*?\\(\\[ ?\\)" nil t)
     (when (looking-at org-priority-regexp)
-    (let ((ov (make-overlay
-                   (re-search-forward "[]]" nil t)
-                   (re-search-backward "[[]" nil t))))
-                 (overlay-put ov 'face 'highlight)
-                 (overlay-put ov 'evaporate t)
-                 (overlay-put ov 'keymap org-mukey-priority-map)
-                 (overlay-put ov 'org-mukey-priority-ov t)))))
+      (let ((ov (make-overlay
+                 (re-search-forward "[]]" nil t)
+                 (re-search-backward "[[]" nil t))))
+        (overlay-put ov 'face 'highlight)
+        (overlay-put ov 'evaporate t)
+        (overlay-put ov 'keymap org-mukey-priority-map)
+        (overlay-put ov 'org-mukey-priority-ov t)))))
 
 (defun org-mukey-make-priority-begin ()
   "DOCSTRING"
   (save-excursion)
   (goto-char (point-max))
   (reverse
-  (cl-loop while (re-search-backward org-priority-regexp nil t)
-           collect (point))))
+   (cl-loop while (re-search-backward org-priority-regexp nil t)
+            collect (point))))
 
 (defun org-mukey-make-priority-end ()
   "DOCSTRING"
   (save-excursion)
   (goto-char (point-min))
-   (cl-loop while (re-search-forward org-priority-regexp nil t)
+  (cl-loop while (re-search-forward org-priority-regexp nil t)
            collect (1-(point))))
 
 (defun org-mukey-make-heading-list ()
   "DOCSTRING"
   (save-excursion)
   (goto-char (point-max))
-   (cl-loop while (re-search-backward org-heading-regexp nil t)
+  (cl-loop while (re-search-backward org-heading-regexp nil t)
            collect (cons (point) (org-current-level))))
-  
+
 (provide 'org-multiple-keymap)
 ;;; org-multiple-keymap.el ends here
