@@ -97,7 +97,8 @@ Key bindings (per priority):
   (if org-multiple-keymap-minor-mode
       (progn
         (org-mukey-set-keymap)
-        (add-hook 'after-change-functions 'org-mukey-timestamp-refresh nil t))
+        (add-hook 'after-change-functions 'org-mukey-timestamp-refresh nil t)
+        (add-hook 'after-change-functions 'org-mukey-priority-refresh nil t))
     (remove-overlays nil nil 'org-mukey-timestamp-ov t)
     (remove-overlays nil nil 'org-mukey-priority-ov t)
     (remove-hook 'after-change-functions 'org-mukey-timestamp-refresh)))
@@ -114,8 +115,8 @@ Key bindings (per priority):
                  (overlay-put ov 'evaporate t)
                  (overlay-put ov 'keymap org-mukey-timestamp-map)
                  (overlay-put ov 'org-mukey-timestamp-ov t)))
-      (cl-loop for begin in (org-mukey-make-prior-begin)
-               for end in (org-mukey-make-prior-end)
+      (cl-loop for begin in (org-mukey-make-priority-begin)
+               for end in (org-mukey-make-priority-end)
                do
                (let ((ov (make-overlay begin end)))
                  (overlay-put ov 'face 'highlight)
@@ -142,6 +143,7 @@ Key bindings (per priority):
 
 (defun org-mukey-timestamp-refresh (beg end len)
   "DOCSTRING"
+  beg end len ;dummy
   (save-excursion
     (when (org-at-timestamp-p t)
       (goto-char (1-(point)))
@@ -153,7 +155,21 @@ Key bindings (per priority):
                  (overlay-put ov 'keymap org-mukey-timestamp-map)
                  (overlay-put ov 'org-mukey-timestamp-ov t)))))
 
-(defun org-mukey-make-prior-begin ()
+(defun org-mukey-priority-refresh (beg end len)
+  "DOCSTRING"
+  beg end len ;dummy
+  (save-excursion
+    (re-search-backward ".*?\\(\\[ ?\\)" nil t)
+    (when (looking-at org-priority-regexp)
+    (let ((ov (make-overlay
+                   (re-search-forward "[]]" nil t)
+                   (re-search-backward "[[]" nil t))))
+                 (overlay-put ov 'face 'highlight)
+                 (overlay-put ov 'evaporate t)
+                 (overlay-put ov 'keymap org-mukey-priority-map)
+                 (overlay-put ov 'org-mukey-priority-ov t)))))
+
+(defun org-mukey-make-priority-begin ()
   "DOCSTRING"
   (save-excursion)
   (goto-char (point-max))
@@ -161,7 +177,7 @@ Key bindings (per priority):
   (cl-loop while (re-search-backward org-priority-regexp nil t)
            collect (point))))
 
-(defun org-mukey-make-prior-end ()
+(defun org-mukey-make-priority-end ()
   "DOCSTRING"
   (save-excursion)
   (goto-char (point-min))
