@@ -22,5 +22,6 @@ before_install:
 script:
   - emacs --version
   - emacs -Q -batch -eval '(message (system-name))'
+  - emacs -Q -batch -eval '(message (org-version))'
   - make
   
