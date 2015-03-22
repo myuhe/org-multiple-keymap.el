@@ -69,5 +69,10 @@
   (org-mukey-timestamp-refresh 1 1 1)
   (should (eq (cl-caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111)))
   
-
+(ert-deftest org-mukey-set-keymap-test ()
+  (org-multiple-keymap-test-setup-buffer "*test*")
+  (org-mukey-set-keymap)
+  (should  (member 'org-mukey-heading-refresh after-change-functions))
+  (should  (member 'org-mukey-timestamp-refresh after-change-functions))
+  (should  (member 'org-mukey-priority-refresh after-change-functions)))
 
