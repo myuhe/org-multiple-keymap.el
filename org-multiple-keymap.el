@@ -37,6 +37,18 @@
 ;;; Code:
 (require 'cl-lib)
 (require 'org-element)
+(require 'eieio)
+
+(defgroup org-multiple-keymap nil "Set keymap to elements, such as timestamp and priority."
+  :tag "Org multiple keymap"
+  :group 'org)
+
+(defcustom org-mukey-source-list '(org-mukey-source-heading
+                                   org-mukey-source-timestamp
+                                   org-mukey-source-priority)
+  "Number of days to get events before today."
+  :group 'org-multiple-keymap
+  :type '(repeat symbol))
 
 (defvar org-mukey-heading-map
   (let ((map (make-sparse-keymap)))
@@ -85,12 +97,51 @@
             (overlay-put ov 'face 'highlight)
             (overlay-put ov 'evaporate t)
             (overlay-put ov 'keymap org-mukey-timestamp-map)
-            (overlay-put ov 'org-mukey-timestamp-ov t)))))))
+            (overlay-put ov 'org-mukey-ov t)))))))
 
 (org-mukey-make-function org-timestamp-up)
 (org-mukey-make-function org-timestamp-down)
 (org-mukey-make-function org-timestamp-up-day)
 (org-mukey-make-function org-timestamp-down-day)
+
+(defclass org-mukey-source ()
+  ((beg-list
+    :type function
+    :accessor org-mukey-source-get-beg
+    :documentation "Return a List of point that beginning of overlay range.")
+   (end-list
+    :type function
+    :accessor org-mukey-source-get-end
+    :documentation "Return a List of point that end of overlay range.")
+   (keymap
+    :type symbol
+    :accessor org-mukey-source-get-keymap
+    :documentation "Keymap to Org-mode element.")
+   (parse-function
+    :type function
+    :accessor org-mukey-source-get-parsefunc
+    :documentation "Overlay for new Org-mode element."))
+  :documentation "A meta class to define org-mukey-source.")
+
+(defclass org-mukey-source-heading (org-mukey-source)
+  ((beg-list :initform 'org-mukey-make-heading-begin)
+   (end-list :initform 'org-mukey-make-heading-end)
+   (keymap :initform org-mukey-heading-map)
+   (parse-function :initform 'org-mukey-heading-refresh)))
+
+(defclass org-mukey-source-timestamp (org-mukey-source)
+  ((beg-list :initform 'org-mukey-make-timestamp-begin)
+   (end-list :initform 'org-mukey-make-timestamp-end)
+   (keymap :initform org-mukey-timestamp-map)
+   (parse-function :initform 'org-mukey-timestamp-refresh)))
+
+(defclass org-mukey-source-priority (org-mukey-source)
+  ((beg-list :initform 'org-mukey-make-priority-begin)
+   (end-list :initform 'org-mukey-make-priority-end)
+   (keymap :initform org-mukey-priority-map)
+   (parse-function :initform 'org-mukey-priority-refresh)))
+
+;;(org-mukey-source-get-beg (make-instance org-mukey-source-heading))
 
 ;;;###autoload
 (define-minor-mode org-multiple-keymap-minor-mode
@@ -100,7 +151,7 @@ ARG is positive, and disable it otherwise.  If called from Lisp,
 enable the mode if ARG is omitted or nil.
 
 Key bindings (heading):
-\\{org-mukey-timestamp-map}
+\\{org-mukey-heading-map}
 
 Key bindings (timestamp):
 \\{org-mukey-timestamp-map}
@@ -109,40 +160,29 @@ Key bindings (priority):
 \\{org-mukey-priority-map}"
   :lighter ""
   (if org-multiple-keymap-minor-mode
-      (progn
-        (org-mukey-set-keymap)
-        (add-hook 'after-change-functions 'org-mukey-timestamp-refresh nil t)
-        (add-hook 'after-change-functions 'org-mukey-priority-refresh nil t)
-        (add-hook 'after-change-functions 'org-mukey-heading-refresh nil t))
+      (org-mukey-set-keymap)
     (remove-overlays nil nil 'org-mukey-ov t)
-    (remove-hook 'after-change-functions 'org-mukey-timestamp-refresh)
-    (remove-hook 'after-change-functions 'org-mukey-priority-refresh)
-    (remove-hook 'after-change-functions 'org-mukey-heading-refresh)))
+    (dolist (source org-mukey-source-list)
+      (remove-hook 'after-change-functions
+                   (org-mukey-source-get-parsefunc (make-instance source)) t))))
 
 (defun org-mukey-set-keymap ()
   (interactive)
-  (let ((lst (org-element-parse-buffer)))
-    (save-excursion
-      (cl-loop for begin in (org-mukey-timestamp-pos-list lst :begin)
-               for end in (org-mukey-timestamp-pos-list lst :end)
-               do
-               (org-mukey-make-overlay
-                (lambda () begin)
-                (lambda () end)
-                org-mukey-timestamp-map))
-      (cl-loop for begin in (org-mukey-make-priority-begin)
-               for end in (org-mukey-make-priority-end)
-               do
-               (org-mukey-make-overlay
-                (lambda () begin)
-                (lambda () end)
-                org-mukey-priority-map))
-      (cl-loop for cons in (org-mukey-make-heading-list)
-               do
-               (org-mukey-make-overlay
-                (lambda () (car cons))
-                (lambda () (+ (car cons) (cdr cons)))
-                org-mukey-heading-map)))))
+  (save-excursion
+    (dolist (source org-mukey-source-list)
+      (let* ((ins (make-instance source))
+             (map (org-mukey-source-get-keymap ins)))
+        (cl-loop for begin in (funcall (org-mukey-source-get-beg ins))
+                 for end in (funcall (org-mukey-source-get-end ins))
+                 do
+                 (org-mukey-make-overlay begin end map))
+        (add-hook 'after-change-functions (org-mukey-source-get-parsefunc ins) nil t)))))
+
+;;(remove-hook 'after-change-functions (org-mukey-source-get-parsefunc (make-instance org-mukey-source-timestamp)))
+;;(add-hook 'after-change-functions (org-mukey-source-get-parsefunc (make-instance org-mukey-source-timestamp)) nil t)
+;;(add-hook 'after-change-functions 'org-mukey-timestamp-refresh nil t)
+;;(remove-hook 'after-change-functions 'org-mukey-timestamp-refresh t)
+;;(add-hook 'after-change-functions (org-mukey-source-get-parsefunc (make-instance org-mukey-source-timestamp)) nil t)
 
 (defun org-mukey-make-heading-list ()
   "DOCSTRING"
@@ -151,8 +191,17 @@ Key bindings (priority):
   (cl-loop while (re-search-backward org-heading-regexp nil t)
            collect (cons (point) (org-current-level))))
 
+(defun org-mukey-make-heading-begin ()
+  (reverse
+   (mapcar 'car (org-mukey-make-heading-list))))
 
-(defun org-mukey-timestamp-pos-list (list type)
+(defun org-mukey-make-heading-end ()
+  (reverse
+   (mapcar (lambda (cons)
+             (+ (car cons) (cdr cons)))
+           (org-mukey-make-heading-list))))
+
+(defun org-mukey-make-timestamp-pos-list (list type)
   "DOCSTRING"
   `(,@(org-element-map list 'timestamp
         (lambda (hl) (org-element-property type hl) ))
@@ -168,6 +217,14 @@ Key bindings (priority):
                          (lambda (hl)
                            (org-element-property :closed hl) ) ) 'timestamp
         (lambda (hl) (org-element-property type hl)))))
+
+(defun org-mukey-make-timestamp-begin ()
+    (let ((lst (org-element-parse-buffer)))
+      (org-mukey-make-timestamp-pos-list lst :begin)))
+
+(defun org-mukey-make-timestamp-end ()
+    (let ((lst (org-element-parse-buffer)))
+  (org-mukey-make-timestamp-pos-list lst :end)))
 
 (defun org-mukey-make-priority-begin ()
   "DOCSTRING"
@@ -194,7 +251,7 @@ Key bindings (priority):
       (org-mukey-make-overlay
        (lambda () (point))
        (lambda () (re-search-forward "\\*+" nil t))
-       org-mukey-heading-map))))
+       'org-mukey-heading-map))))
 
 (defun org-mukey-timestamp-refresh (beg end len)
   "DOCSTRING"
@@ -205,7 +262,7 @@ Key bindings (priority):
       (org-mukey-make-overlay
        (lambda () (re-search-forward "[]>]" nil t))
        (lambda () (re-search-backward "[[<]" nil t))
-       org-mukey-timestamp-map))))
+       'org-mukey-timestamp-map))))
 
 (defun org-mukey-priority-refresh (beg end len)
   "DOCSTRING"
@@ -216,16 +273,16 @@ Key bindings (priority):
       (org-mukey-make-overlay
        (lambda () (re-search-forward "[]]" nil t))
        (lambda () (re-search-backward "[[]" nil t))
-       org-mukey-priority-map))))
+       'org-mukey-priority-map))))
 
 (defun org-mukey-make-overlay (beg end key)
-(let ((ov (make-overlay
-                 (funcall beg)
-                 (funcall end))))
-        (overlay-put ov 'face 'highlight)
-        (overlay-put ov 'evaporate t)
-        (overlay-put ov 'keymap key)
-        (overlay-put ov 'org-mukey-ov t)))
+  (let ((ov (make-overlay 
+              (if (functionp beg) (funcall beg) beg)
+              (if (functionp end) (funcall end) end))))
+    (overlay-put ov 'face 'highlight)
+    (overlay-put ov 'evaporate t)
+    (overlay-put ov 'keymap (eval key))
+    (overlay-put ov 'org-mukey-ov t)))
 
 (provide 'org-multiple-keymap)
 ;;; org-multiple-keymap.el ends here
