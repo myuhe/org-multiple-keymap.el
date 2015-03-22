@@ -53,5 +53,19 @@
   (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117))
   (goto-char 143)
   (org-mukey-heading-refresh 1 1 1)
-  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117))
-)
+  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117)))
+
+(ert-deftest org-mukey-timestamp-refresh-test ()
+  (org-multiple-keymap-test-setup-buffer "*test*")
+  (goto-char 98)
+  (org-mukey-timestamp-refresh 1 1 1)
+  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111))
+  (goto-char 126)
+  (org-mukey-timestamp-refresh 1 1 1)
+  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111))
+  (goto-char 205)
+  (org-mukey-timestamp-refresh 1 1 1)
+  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111)))
+  
+
+
