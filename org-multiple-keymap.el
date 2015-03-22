@@ -33,6 +33,8 @@
 ;;
 ;;; Changelog:
 ;; 2015-03-15 Initial release.
+;; 2015-03-22 Rewrite with `eieio'.
+
 
 ;;; Code:
 (require 'cl-lib)
@@ -83,14 +85,10 @@
 
 ;;; metaclass
 (defclass org-mukey-source ()
-  ((beg-list
+  ((region
     :type function
-    :accessor org-mukey-source-get-beg
-    :documentation "Return a List of point that beginning of overlay range.")
-   (end-list
-    :type function
-    :accessor org-mukey-source-get-end
-    :documentation "Return a List of point that end of overlay range.")
+    :accessor org-mukey-source-get-region
+    :documentation "Return association List of point that overlay region.")
    (keymap
     :type symbol
     :accessor org-mukey-source-get-keymap
@@ -103,59 +101,16 @@
 
 ;;; heading class
 (defclass org-mukey-source-heading (org-mukey-source)
-  ((beg-list :initform 'org-mukey-make-heading-begin)
-   (end-list :initform 'org-mukey-make-heading-end)
+  ((region :initform 'org-mukey-make-heading-alist)
    (keymap :initform org-mukey-heading-map)
    (parse-function :initform 'org-mukey-heading-refresh)))
 
-(defun org-mukey-make-heading-list ()
+(defun org-mukey-make-heading-alist ()
   "DOCSTRING"
   (save-excursion)
   (goto-char (point-max))
   (cl-loop while (re-search-backward org-heading-regexp nil t)
-           collect (cons (point) (org-current-level))))
-
-(defun org-mukey-make-heading-begin ()
-  (reverse
-   (mapcar 'car (org-mukey-make-heading-list))))
-
-(defun org-mukey-make-heading-end ()
-  (reverse
-   (mapcar (lambda (cons)
-             (+ (car cons) (cdr cons)))
-           (org-mukey-make-heading-list))))
-
-;;; timestamp class
-(defclass org-mukey-source-timestamp (org-mukey-source)
-  ((beg-list :initform 'org-mukey-make-timestamp-begin)
-   (end-list :initform 'org-mukey-make-timestamp-end)
-   (keymap :initform org-mukey-timestamp-map)
-   (parse-function :initform 'org-mukey-timestamp-refresh)))
-
-(defun org-mukey-make-timestamp-pos-list (list type)
-  "DOCSTRING"
-  `(,@(org-element-map list 'timestamp
-        (lambda (hl) (org-element-property type hl) ))
-    ,@(org-element-map (org-element-map list 'headline
-                         (lambda (hl)
-                           (org-element-property :deadline hl) ) ) 'timestamp
-        (lambda (hl) (org-element-property type hl) ))
-    ,@(org-element-map (org-element-map list 'headline
-                         (lambda (hl)
-                           (org-element-property :scheduled hl) ) ) 'timestamp
-        (lambda (hl) (org-element-property type hl) ))
-    ,@(org-element-map (org-element-map list 'headline
-                         (lambda (hl)
-                           (org-element-property :closed hl) ) ) 'timestamp
-        (lambda (hl) (org-element-property type hl)))))
-
-(defun org-mukey-make-timestamp-begin ()
-    (let ((lst (org-element-parse-buffer)))
-      (org-mukey-make-timestamp-pos-list lst :begin)))
-
-(defun org-mukey-make-timestamp-end ()
-    (let ((lst (org-element-parse-buffer)))
-  (org-mukey-make-timestamp-pos-list lst :end)))
+           collect (cons (point) (+ (point) (org-current-level)))))
 
 (defun org-mukey-heading-refresh (beg end len)
   "DOCSTRING"
@@ -168,6 +123,23 @@
        (lambda () (point))
        (lambda () (re-search-forward "\\*+" nil t))
        'org-mukey-heading-map))))
+
+;;; timestamp class
+(defclass org-mukey-source-timestamp (org-mukey-source)
+  ((region :initform 'org-mukey-make-timestamp-alist)
+   (keymap :initform org-mukey-timestamp-map)
+   (parse-function :initform 'org-mukey-timestamp-refresh)))
+
+(defun org-mukey-make-timestamp-alist ()
+  "DOCSTRING"
+  (save-excursion)
+  (goto-char (point-min))
+  (cl-loop with end  = nil
+           with re  = (org-re-timestamp 'all)
+           while (re-search-forward re nil t)
+           do (setq end  (point))
+           collect (cons (re-search-backward re nil t) end)
+           do (re-search-forward re nil t)))
 
 (defun org-mukey-timestamp-refresh (beg end len)
   "DOCSTRING"
@@ -182,25 +154,20 @@
 
 ;;; priority class
 (defclass org-mukey-source-priority (org-mukey-source)
-  ((beg-list :initform 'org-mukey-make-priority-begin)
-   (end-list :initform 'org-mukey-make-priority-end)
+  ((region :initform 'org-mukey-make-priority-alist)
    (keymap :initform org-mukey-priority-map)
    (parse-function :initform 'org-mukey-priority-refresh)))
 
-(defun org-mukey-make-priority-begin ()
-  "DOCSTRING"
-  (save-excursion)
-  (goto-char (point-max))
-  (reverse
-   (cl-loop while (re-search-backward org-priority-regexp nil t)
-            collect (point))))
-
-(defun org-mukey-make-priority-end ()
+(defun org-mukey-make-priority-alist ()
   "DOCSTRING"
   (save-excursion)
   (goto-char (point-min))
-  (cl-loop while (re-search-forward org-priority-regexp nil t)
-           collect (1-(point))))
+  (cl-loop with end  = nil
+           while (re-search-forward org-priority-regexp nil t)
+           do (setq end (1- (point)))
+           collect (cons (re-search-backward org-priority-regexp nil t) end)
+           do (re-search-forward org-priority-regexp nil t)))
+
 
 (defun org-mukey-priority-refresh (beg end len)
   "DOCSTRING"
@@ -241,11 +208,11 @@ Key bindings (priority):
   (save-excursion
     (dolist (source org-mukey-source-list)
       (let* ((ins (make-instance source))
+             (region  (funcall (org-mukey-source-get-region ins)))
              (map (org-mukey-source-get-keymap ins)))
-        (cl-loop for begin in (funcall (org-mukey-source-get-beg ins))
-                 for end in (funcall (org-mukey-source-get-end ins))
+        (cl-loop for cns in region
                  do
-                 (org-mukey-make-overlay begin end map))
+                 (org-mukey-make-overlay (car cns) (cdr cns) map))
         (add-hook 'after-change-functions (org-mukey-source-get-parsefunc ins) nil t)))))
 
 (defun org-mukey-make-overlay (beg end key)
