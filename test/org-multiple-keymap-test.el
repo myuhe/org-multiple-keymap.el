@@ -25,12 +25,14 @@
 
 (ert-deftest org-mukey-make-heading-alist-test ()
   (setq expected '((139 . 140) (105 . 107) (44 . 45) (1 . 2)))
-    (org-multiple-keymap-test-setup-buffer "*test*")
-    (setq actual (org-mukey-make-heading-alist))
-    (should (equal expected actual)))
+  (org-multiple-keymap-test-setup-buffer "*test*")
+  (setq actual (org-mukey-make-heading-alist))
+  (should (equal expected actual)))
 
 (ert-deftest org-mukey-make-timestamp-alist-test ()
-  (setq expected '((89 . 103) (121 . 135) (184 . 202)))
+  (setq expected (if (string= (substring (org-version) 0 1) "7")
+            '((90 . 102) (122 . 134) (185 . 197))
+            '((89 . 103) (121 . 135) (184 . 202))))
     (org-multiple-keymap-test-setup-buffer "*test*")
     (setq actual (org-mukey-make-timestamp-alist))
     (should (equal expected actual)))
