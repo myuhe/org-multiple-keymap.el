@@ -1,5 +1,7 @@
 (require 'ert)
 (require 'undercover)
+(require 'cl-lib)
+
 (undercover "org-multiple-keymap.el")
 
 (require 'org-multiple-keymap)
@@ -47,25 +49,25 @@
   (org-multiple-keymap-test-setup-buffer "*test*")
   (goto-char 1)
   (org-mukey-heading-refresh 1 1 1)
-  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117))
+  (should (eq (cl-caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117))
   (goto-char 106)
   (org-mukey-heading-refresh 1 1 1)
-  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117))
+  (should (eq (cl-caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117))
   (goto-char 143)
   (org-mukey-heading-refresh 1 1 1)
-  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117)))
+  (should (eq (cl-caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 117)))
 
 (ert-deftest org-mukey-timestamp-refresh-test ()
   (org-multiple-keymap-test-setup-buffer "*test*")
   (goto-char 98)
   (org-mukey-timestamp-refresh 1 1 1)
-  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111))
+  (should (eq (cl-caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111))
   (goto-char 126)
   (org-mukey-timestamp-refresh 1 1 1)
-  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111))
+  (should (eq (cl-caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111))
   (goto-char 205)
   (org-mukey-timestamp-refresh 1 1 1)
-  (should (eq (caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111)))
+  (should (eq (cl-caadr (overlay-get  (car (overlays-at (point))) 'keymap)) 111)))
   
 
 
