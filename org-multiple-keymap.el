@@ -100,6 +100,7 @@
   :documentation "A meta class to define org-mukey-source.")
 
 ;;; heading class
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defclass org-mukey-source-heading (org-mukey-source)
   ((region :initform 'org-mukey-make-heading-alist)
    (keymap :initform org-mukey-heading-map)
@@ -125,6 +126,7 @@
        'org-mukey-heading-map))))
 
 ;;; timestamp class
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defclass org-mukey-source-timestamp (org-mukey-source)
   ((region :initform 'org-mukey-make-timestamp-alist)
    (keymap :initform org-mukey-timestamp-map)
@@ -153,6 +155,7 @@
        'org-mukey-timestamp-map))))
 
 ;;; priority class
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defclass org-mukey-source-priority (org-mukey-source)
   ((region :initform 'org-mukey-make-priority-alist)
    (keymap :initform org-mukey-priority-map)
@@ -167,7 +170,6 @@
            do (setq end (1- (point)))
            collect (cons (re-search-backward org-priority-regexp nil t) end)
            do (re-search-forward org-priority-regexp nil t)))
-
 
 (defun org-mukey-priority-refresh (beg end len)
   "DOCSTRING"
@@ -215,10 +217,12 @@ Key bindings (priority):
                  (org-mukey-make-overlay (car cns) (cdr cns) map))
         (add-hook 'after-change-functions (org-mukey-source-get-parsefunc ins) nil t)))))
 
+;;;Low level API
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun org-mukey-make-overlay (beg end key)
   (let ((ov (make-overlay 
-              (if (functionp beg) (funcall beg) beg)
-              (if (functionp end) (funcall end) end))))
+             (if (functionp beg) (funcall beg) beg)
+             (if (functionp end) (funcall end) end))))
     (overlay-put ov 'face 'highlight)
     (overlay-put ov 'evaporate t)
     (overlay-put ov 'keymap (eval key))
