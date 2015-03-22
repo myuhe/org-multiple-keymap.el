@@ -30,9 +30,9 @@
   (should (equal expected actual)))
 
 (ert-deftest org-mukey-make-timestamp-alist-test ()
-  (setq expected (if (string= (substring (org-version) 0 1) "7")
-            '((90 . 102) (122 . 134) (185 . 197))
-            '((89 . 103) (121 . 135) (184 . 202))))
+  (setq expected (if (string= (substring (org-version) 0 3) "8.3")
+            '((89 . 103) (121 . 135) (184 . 202))
+            '((90 . 102) (122 . 134) (185 . 197))))
     (org-multiple-keymap-test-setup-buffer "*test*")
     (setq actual (org-mukey-make-timestamp-alist))
     (should (equal expected actual)))
