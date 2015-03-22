@@ -76,3 +76,14 @@
   (should  (member 'org-mukey-timestamp-refresh after-change-functions))
   (should  (member 'org-mukey-priority-refresh after-change-functions)))
 
+(ert-deftest org-multiple-keymap-minor-mode-test ()
+  (org-multiple-keymap-test-setup-buffer "*test*")
+  (org-multiple-keymap-minor-mode t)
+  (should (member 'org-mukey-heading-refresh after-change-functions))
+  (should (member 'org-mukey-timestamp-refresh after-change-functions))
+  (should (member 'org-mukey-priority-refresh after-change-functions))
+  (org-multiple-keymap-minor-mode -1)
+  (should (not (member 'org-mukey-heading-refresh after-change-functions)))
+  (should (not (member 'org-mukey-timestamp-refresh after-change-functions)))
+  (should (not (member 'org-mukey-priority-refresh after-change-functions))))
+
