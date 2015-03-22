@@ -2,7 +2,7 @@
 
 ;; Author: myuhe <yuhei.maeda_at_gmail.com>
 ;; URL: https://github.com/myuhe/org-multiple-keymap.el
-;; Version: 0.1
+;; Version: 0.2
 ;; Maintainer: myuhe
 ;; Copyright (C) :2015 myuhe all rights reserved.
 ;; Created: :15-03-15
