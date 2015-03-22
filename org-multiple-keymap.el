@@ -227,10 +227,10 @@ Key bindings (priority):
     (overlay-put ov 'evaporate t)
     (overlay-put ov 'keymap (eval key))
     (overlay-put ov 'org-mukey-ov t)))
+
 (defun org-mukey-todo-done ()
   "DOCSTRING"
   (org-todo 'done))
-(lambda () (org-todo 'done))
 
 (defmacro org-mukey-make-function (fun)
   "Create a function for update overlay."
