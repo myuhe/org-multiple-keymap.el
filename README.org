@@ -1,7 +1,8 @@
-* org-multiple-keymap.el [[http://melpa.org/#/org-multiple-keymap][file:http://melpa.org/packages/org-multiple-keymap-badge.svg]]
+* org-multiple-keymap.el [[http://melpa.org/#/org-multiple-keymap][file:http://melpa.org/packages/org-multiple-keymap-badge.svg]] [[https://travis-ci.org/myuhe/org-multiple-keymap.el][https://travis-ci.org/myuhe/org-multiple-keymap.el.svg?branch=master]] [[https://coveralls.io/r/myuhe/org-multiple-keymap.el?branch=master][https://coveralls.io/repos/myuhe/org-multiple-keymap.el/badge.svg?branch=master]]
    =org-multiple-keymap.el= sets keymap to elements , such as timestamp and priority.
    =org-multiple-keymap.el= offers minor-mode  =org-multiple-keymap-minor-mode=.
    If =org-multiple-keymap-minor-mode= is enabled, Some keymap applies  =Org-mode= 
+
 
 * Usage
 
