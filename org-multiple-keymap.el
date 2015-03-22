@@ -55,7 +55,7 @@
 (defvar org-mukey-heading-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "a") 'org-archive-subtree)
-    (define-key map (kbd "d") (lambda () (org-todo 'done)))
+    (define-key map (kbd "d") 'org-mukey-todo-done)
     (define-key map (kbd "n") 'org-next-visible-heading)
     (define-key map (kbd "p") 'org-previous-visible-heading)
     (define-key map (kbd "f") 'org-do-demote)
@@ -223,6 +223,10 @@ Key bindings (priority):
     (overlay-put ov 'evaporate t)
     (overlay-put ov 'keymap (eval key))
     (overlay-put ov 'org-mukey-ov t)))
+(defun org-mukey-todo-done ()
+  "DOCSTRING"
+  (org-todo 'done))
+(lambda () (org-todo 'done))
 
 (defmacro org-mukey-make-function (fun)
   "Create a function for update overlay."
