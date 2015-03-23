@@ -87,3 +87,9 @@
   (should (not (member 'org-mukey-timestamp-refresh after-change-functions)))
   (should (not (member 'org-mukey-priority-refresh after-change-functions))))
 
+(ert-deftest org-mukey-todo-done-test ()
+  (org-multiple-keymap-test-setup-buffer "*test*")
+  (goto-char 147)
+  (org-mukey-todo-done)
+  (buffer-substring 145 149)
+  (should (string= (buffer-substring 145 149) "TODO")))
