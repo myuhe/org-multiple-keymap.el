@@ -174,13 +174,16 @@
 (defun org-mukey-priority-refresh (beg end len)
   "DOCSTRING"
   beg end len ;dummy
-  (save-excursion
-    (re-search-backward ".*?\\(\\[ ?\\)" nil t)
-    (when (looking-at org-priority-regexp)
+  (let ((pos (point)))
+    (save-excursion
+    (when (progn
+            (re-search-backward ".*?\\(\\[ ?\\)" (- (point) 5) t)
+            (looking-at org-priority-regexp))
       (org-mukey-make-overlay
        (lambda () (re-search-forward "[]]" nil t))
        (lambda () (re-search-backward "[[]" nil t))
-       'org-mukey-priority-map))))
+       'org-mukey-priority-map))
+    (goto-char pos))))
 
 ;;;###autoload
 (define-minor-mode org-multiple-keymap-minor-mode
